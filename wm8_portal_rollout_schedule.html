@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WM8 + Portal Rollout Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Roboto', -apple-system, sans-serif; font-size: 14px; background: #F4F6F8; color: #2A3545; padding: 24px; min-width: 900px; }
+  h1 { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; color: #182C3A; }
+  .subtitle { font-size: 13px; color: #4A5868; margin-bottom: 20px; }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .ctrl-card { background: #fff; border: 1px solid #D0D8E2; border-radius: 10px; padding: 16px; }
+  .ctrl-title { font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 600; color: #4A5868; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+  .ctrl-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .ctrl-row:last-child { margin-bottom: 0; }
+  .ctrl-row label { font-size: 13px; color: #2A3545; flex: 1; }
+  input[type=date] {
+    font-family: 'Roboto', sans-serif; font-size: 13px; padding: 6px 9px; border: 1px solid #D0D8E2;
+    border-radius: 6px; background: #fff; color: #2A3545; outline: none; width: 150px;
+  }
+  input[type=date]:focus { border-color: #1FB3AF; }
+  input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: #1FB3AF; }
+  .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #2A3545; cursor: pointer; user-select: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E8ECF0; }
+
+  .fixed-list { font-size: 12.5px; color: #2A3545; line-height: 1.7; padding-left: 18px; }
+  .fixed-list li::marker { color: #8896A6; }
+  .fixed-list a { color: #1FB3AF; text-decoration: none; word-break: break-all; }
+  .fixed-list a:hover { text-decoration: underline; }
+
+  .rules-box { background: #fff; border: 1px solid #D0D8E2; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .rules-title { font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 600; color: #4A5868; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 10px; }
+  .rules-list { font-size: 12.5px; color: #2A3545; line-height: 1.8; padding-left: 18px; }
+  .rules-list li::marker { color: #1FB3AF; font-weight: 700; }
+  .rules-list b { color: #182C3A; }
+  .rules-list code { background: #E8ECF0; color: #182C3A; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+
+  .summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric { background: #E8ECF0; border: 1px solid #D0D8E2; border-radius: 8px; padding: 12px 14px; }
+  .metric-label { font-size: 10px; color: #4A5868; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
+  .metric-value { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #182C3A; }
+  .metric-sub { font-size: 11px; color: #8896A6; margin-top: 2px; }
+
+  .section-title { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: #182C3A; margin: 24px 0 10px; }
+  .section-title .cnt { font-weight: 400; color: #4A5868; font-family: 'Roboto', sans-serif; }
+
+  .section { background: #fff; border: 1px solid #D0D8E2; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+  .tbl-wrap { overflow-x: auto; max-height: 620px; overflow-y: auto; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  th { font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 600; color: #4A5868; padding: 8px 10px; border-bottom: 1px solid #D0D8E2;
+       text-align: left; background: #F4F6F8; white-space: nowrap; position: sticky; top: 0; z-index: 5; text-transform: uppercase; letter-spacing: .04em; box-shadow: 0 1px 0 #D0D8E2; }
+  td { padding: 7px 10px; border-bottom: 1px solid #E8ECF0; vertical-align: top; color: #2A3545; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F4F6F8; }
+  tr.monitor-row td { background: #F2F7E9; color: #5C6B1A; font-style: italic; }
+  tr.monitor-row:hover td { background: #EAF2DC; }
+  tr.freeze-row td { background: #E5F6F5; color: #0F6B68; font-style: italic; }
+  tr.placeholder-row td { background: repeating-linear-gradient(45deg, #F4F6F8, #F4F6F8 10px, #E8ECF0 10px, #E8ECF0 20px); color: #8896A6; font-style: italic; }
+  tr.freeze-row:hover td { background: #D9F0EF; }
+  tr.mon-sub-row td { background: #FAFBFC; color: #8896A6; font-size: 11px; padding: 3px 10px 7px 34px; border-bottom: 1px solid #E8ECF0; }
+  tr.mon-sub-row:hover td { background: #FAFBFC; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .mono { font-variant-numeric: tabular-nums; }
+
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+  .tag-retail-aplus { background: #EEF5D6; color: #5C6B00; }
+  .tag-retail-ds { background: #E1F5F4; color: #0F7A77; }
+  .tag-cluster { background: #E1F5F4; color: #0F7A77; }
+  .tag-customname { background: #E6E8F0; color: #182C3A; }
+  .tag-infra { background: #E5E6F2; color: #18214D; }
+  .tag-deferred { background: #FBEFD9; color: #8A6D1F; }
+  .tag-suspended { background: #E8ECF0; color: #4A5868; }
+  .tag-ca { background: #FBEFD9; color: #8A6D1F; }
+  .tag-ua { background: #FFF4D6; color: #8a6d1f; }
+  .tag-freeze { background: #E1F5F4; color: #0F7A77; }
+  .tag-placeholder { background: #E8ECF0; color: #4A5868; border: 1px dashed #D0D8E2; }
+
+  .tag-monitor { background: #F2F7E9; color: #5C6B1A; }
+  .tag-cap { background: #FBEFD9; color: #8A6D1F; margin-left: 6px; }
+  .tag-nocap { background: #EEF5D6; color: #5C6B00; margin-left: 6px; }
+
+  .hidlist { max-width: 560px; }
+  .hidchip {
+    display: inline-flex; align-items: baseline; gap: 4px; font-size: 11px;
+    background: #E8ECF0; color: #2A3545; padding: 3px 7px; border-radius: 5px; margin: 2px 3px 2px 0;
+  }
+  .hidchip b { font-variant-numeric: tabular-nums; color: #182C3A; }
+  .hidchip .hname { color: #4A5868; }
+  .hidchip .hcn { font-size: 9px; font-weight: 700; color: #182C3A; background: #E6E8F0; padding: 1px 5px; border-radius: 8px; }
+  .hcn-demo { font-size: 9px; font-weight: 700; color: #182C3A; background: #E6E8F0; padding: 1px 5px; border-radius: 8px; }
+  .more-link { font-size: 11px; color: #1FB3AF; cursor: pointer; user-select: none; margin-left: 2px; }
+  .datecell { white-space: nowrap; }
+  .notice { color: #4A5868; font-size: 11px; white-space: nowrap; }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .export-btn {
+    margin-left: auto; font-family: 'Roboto', sans-serif; font-size: 12px; padding: 6px 14px; border-radius: 7px;
+    border: 1px solid #D0D8E2; background: #fff; color: #2A3545;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .1s;
+  }
+  .export-btn:hover { background: #F4F6F8; border-color: #1FB3AF; }
+  .export-btn svg { width: 13px; height: 13px; stroke: #4A5868; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .footnote { font-size: 11px; color: #8896A6; margin-top: 6px; padding: 0 2px; }
+
+  #dayTableWrap.hide-col-1 #dayTable th:nth-child(1), #dayTableWrap.hide-col-1 #dayTable td:nth-child(1) { display: none; }
+  #dayTableWrap.hide-col-2 #dayTable th:nth-child(2), #dayTableWrap.hide-col-2 #dayTable td:nth-child(2) { display: none; }
+  #dayTableWrap.hide-col-3 #dayTable th:nth-child(3), #dayTableWrap.hide-col-3 #dayTable td:nth-child(3) { display: none; }
+  #dayTableWrap.hide-col-4 #dayTable th:nth-child(4), #dayTableWrap.hide-col-4 #dayTable td:nth-child(4) { display: none; }
+  #dayTableWrap.hide-col-5 #dayTable th:nth-child(5), #dayTableWrap.hide-col-5 #dayTable td:nth-child(5) { display: none; }
+  #dayTableWrap.hide-col-6 #dayTable th:nth-child(6), #dayTableWrap.hide-col-6 #dayTable td:nth-child(6) { display: none; }
+  #dayTableWrap.hide-col-7 #dayTable th:nth-child(7), #dayTableWrap.hide-col-7 #dayTable td:nth-child(7) { display: none; }
+  #dayTableWrap.hide-col-8 #dayTable th:nth-child(8), #dayTableWrap.hide-col-8 #dayTable td:nth-child(8) { display: none; }
+  #dayTableWrap.hide-col-9 #dayTable th:nth-child(9), #dayTableWrap.hide-col-9 #dayTable td:nth-child(9) { display: none; }
+  #dayTableWrap.hide-col-10 #dayTable th:nth-child(10), #dayTableWrap.hide-col-10 #dayTable td:nth-child(10) { display: none; }
+  #dayTableWrap.hide-col-11 #dayTable th:nth-child(11), #dayTableWrap.hide-col-11 #dayTable td:nth-child(11) { display: none; }
+  #dayTableWrap.hide-col-12 #dayTable th:nth-child(12), #dayTableWrap.hide-col-12 #dayTable td:nth-child(12) { display: none; }
+
+  .col-check-row { display: flex; align-items: center; gap: 7px; padding: 4px 2px; cursor: pointer; user-select: none; }
+  .col-check-row input { width: 13px; height: 13px; cursor: pointer; accent-color: #1FB3AF; }
+  .col-check-row:hover { color: #1FB3AF; }
+</style>
+</head>
+<body>
+
+<h1>Webmail 8 + Portal Upgrade — Partner Rollout Schedule</h1>
+
+<div class="summary">
+  <div class="metric"><div class="metric-label">HIDs scheduled</div><div class="metric-value" id="mTotal">—</div><div class="metric-sub">visible</div></div>
+  <div class="metric"><div class="metric-label">Rollout days</div><div class="metric-value" id="mDays">—</div><div class="metric-sub" id="mDaysSub">batches</div></div>
+  <div class="metric"><div class="metric-label">Starts</div><div class="metric-value" id="mStart">—</div></div>
+  <div class="metric"><div class="metric-label">Completes</div><div class="metric-value" id="mEnd">—</div></div>
+  <div class="metric"><div class="metric-label">Total span</div><div class="metric-value" id="mSpan">—</div><div class="metric-sub">calendar weeks</div></div>
+</div>
+
+<details class="ctrl-card" style="margin-bottom: 16px;">
+  <summary class="ctrl-title" style="cursor: pointer; margin-bottom: 0;">Deferred to 2027 <span class="cnt" style="text-transform: none; letter-spacing: normal; font-weight: 400;">(dates TBD)</span></summary>
+  <div style="margin-top: 12px;">
+    <div class="tbl-wrap" style="max-height:220px">
+      <table id="deferredTable"></table>
+    </div>
+  </div>
+</details>
+
+<div class="toolbar" style="position: relative;">
+  <div class="section-title" style="margin:0">Schedule</div>
+  <button class="export-btn" onclick="toggleColumnsPanel()">
+    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    Columns
+  </button>
+  <div id="columnsPanel" style="display:none; position:absolute; top:34px; right:110px; background:#fff; border:1px solid #e0dfd8; border-radius:8px; padding:10px 14px; box-shadow:0 4px 14px rgba(0,0,0,.08); z-index:5; font-size:12.5px; min-width:190px;"></div>
+</div>
+<div class="section">
+  <div class="tbl-wrap" id="dayTableWrap" style="max-height: none; overflow-y: visible;">
+    <table id="dayTable"></table>
+  </div>
+</div>
+
+<details class="ctrl-card" style="margin-bottom: 16px;">
+  <summary class="ctrl-title" style="cursor: pointer; margin-bottom: 0;">Excluded — suspended <span class="cnt" style="text-transform: none; letter-spacing: normal; font-weight: 400;">(digitalspaceforfive custom_name group)</span></summary>
+  <div style="margin-top: 12px;">
+    <div class="tbl-wrap" style="max-height:180px">
+      <table id="suspendedTable"></table>
+    </div>
+  </div>
+</details>
+
+
+<div class="controls" style="grid-template-columns: 1fr; margin-top: 20px">
+  <details class="ctrl-card">
+    <summary class="ctrl-title" style="cursor: pointer; margin-bottom: 0;">Fixed constraints (not adjustable here)</summary>
+    <ul class="fixed-list" style="margin-top: 12px">
+      <li><b>Tuesday is the base cadence</b> — no Mondays, Fridays, weekends, or Canadian/Ukrainian holidays. Some batches also land on a Thursday under the compressed cadence below; Tuesday and Thursday are the only two days ever used.</li>
+      <li><b>Compressed cadence for specific batches</b> (<code>alestra</code>, <code>rogersrdc</code>, <code>windstream</code>, <code>default</code>): once one of these rolls out, the next batch alternates Tue→Thu (+2 days)→Tue (+5 days) instead of a full week, to fit more value in before the freeze.</li>
+      <li><b>3 reserved empty slots</b> right after the Aplus batch — held open intentionally, no HIDs assigned, and excluded from sequence numbering entirely</li>
+      <li><b>Batches 1–4 capped at 5 HIDs</b> each while the Portal process is validated <span class="tag tag-cap">capped</span> — reserved slots don't count toward this budget, only real batches do</li>
+      <li><b>Batch 5 onward: cap lifted</b> — each remaining <code>custom_name</code> group or infra batch rolls out as one uncapped batch, WM8 and Portal together <span class="tag tag-nocap">uncapped</span>. Clusters are always uncapped regardless of position (see "How this sequence was built").</li>
+      <li><b>3-day lead time</b> for all <code>custom_name</code> batches (retail, the discovered branding groups, and internal <code>default</code>/<code>hostpapadefault</code>); <b>7-day lead time</b> for clusters — required for both the WM8 and Portal teams before each rollout day</li>
+      <li><b>30-day advance notice</b> to partners ahead of every batch's rollout date, regardless of batch type</li>
+      <li>Each batch always <b>starts on a fresh day</b> — no mixing leftover slots across group boundaries</li>
+      <li><b>Monitoring runs the days immediately following each rollout</b>, up to the next scheduled batch — no separate week is blocked out for it</li>
+      <li><b>Code freeze:</b> as currently sequenced, the last 2026 batch is c0 on <b>Tue Dec 8, 2026</b>; nothing rolls out again until c7 on <b>Tue Jan 12, 2027</b>. Covers the official freeze window of Fri Dec 11, 2026 – Fri Jan 8, 2027 <span class="tag tag-freeze">freeze</span> — shown as its own set of weekly rows in the schedule. These specific dates shift if the start date changes; the freeze window itself (Dec 11 – Jan 8) does not.</li>
+    </ul>
+  </details>
+</div>
+
+<details class="rules-box">
+  <summary class="rules-title" style="cursor: pointer; margin-bottom: 0;">How this sequence was built</summary>
+  <div class="rules-title" style="margin-top: 4px; margin-bottom: 6px; text-transform: none; letter-spacing: normal; font-weight: 400; color: #888780;">Rules are listed in priority order — each one applies only after everything above it has been satisfied. 18 real batches cover 308 HIDs in total.</div>
+  <ol class="rules-list" style="margin-top: 6px">
+    <li><b>Priority 1 — Scope is filtered first, before any ordering happens:</b> 8 HIDs already rolled out elsewhere are dropped entirely; the <code>digitalspaceforfive</code> group (5 HIDs) is suspended and excluded from all batches; 5 high-volume or separate-infrastructure HIDs are pulled into a 2027 batch (Tbaytel, SaskTel, EarthLink, TRIARA, Telenor Norway). Two clusters (c35, c38) ended up empty once their only HIDs were removed this way, and dropped out of the schedule entirely.</li>
+    <li><b>Priority 2 — Shared Portal branding is non-negotiable:</b> any HIDs sharing the same <code>custom_name</code> in the branding sheet must roll out on the same day, full stop — this overrides everything below it. Aplus and DigitalSpace (retail) plus six more groups discovered by checking every <code>custom_name</code> against the cluster schedule — <code>alestra</code>, <code>breatheinternet</code>, <code>fairpointwebservices</code>, <code>rogersrdc</code>, <code>windstream</code>, <code>northernteldatacorp</code> — were pulled out of their home clusters into standalone batches. <code>breatheinternet</code>, <code>windstream</code>, and <code>fairpointwebservices</code> have since been manually combined into one joint batch; the others remain standalone. <code>default</code> and <code>hostpapadefault</code> are also <code>custom_name</code> groups (internal infrastructure ones — see Priority 3).</li>
+    <li><b>Priority 3 — Internal infrastructure still gets upgraded, on the same 3-day lead time as any other custom_name batch:</b> <code>default</code> and <code>hostpapadefault</code> are internal/monitoring infrastructure, not real partners, but they're still <code>custom_name</code> batches under Priority 2 — each gets its own dedicated batch, placed after the partner-facing branding groups.</li>
+    <li><b>Priority 4 — Clusters are never split, same as branding groups:</b> a cluster's entire remaining membership always rolls out as one batch on one day, no matter how many HIDs it has or what position it lands in — it stays whole and is exempt from the 5-HID cap even if positioned in one of the first 4 slots. (Retail/<code>custom_name</code> groups don't get this same protection — they can still be split if they land somewhere too small to hold them, as DigitalSpace originally was.) c30, c45, and c8 have since been manually combined into one joint batch.</li>
+    <li><b>Priority 5 — Clusters ordered by fewest remaining logins first:</b> once the above groups are pulled out, the remaining clusters are sequenced ascending by their <i>remaining</i> total 30-day logins (recalculated after exclusions/pulls, not the original pre-exclusion figure — several clusters lost their highest-volume HID to a branding pull or 2027 deferral, which would have broken a naive ascending sort based on stale totals).</li>
+    <li><b>Priority 6 — Within a cluster, lowest-usage partners first:</b> HIDs inside each remaining cluster are ordered ascending by individual 30-day login count. This has no effect on the schedule's dates, since clusters are never split (Priority 4) — it's purely cosmetic ordering for the HID list display.</li>
+    <li><b>Priority 7 — Manual placement, layered on top of all of the above:</b> the 3 reserved empty slots, the position of rogersrdc/northernteldatacorp/alestra ahead of DigitalSpace, the merge of breatheinternet + windstream + fairpointwebservices into one batch, the merge of c30 + c45 + c8 into one batch, the specific compressed-cadence batches, and the Seq numbering skipping reserved slots were all added by direct instruction rather than derived from the rules above. Priorities 1–4 (scope, branding grouping, and cluster atomicity) are hard rules baked into how the schedule is generated; Priorities 5–7 (cluster order, within-cluster order, manual placement) are the adjustable layer on top.</li>
+  </ol>
+</details>
+
+<details class="ctrl-card" style="margin-top: 16px;">
+  <summary class="ctrl-title" style="cursor: pointer; margin-bottom: 0;">Data sources</summary>
+  <ul class="fixed-list" style="margin-top: 12px">
+    <li><b>Branding sheet</b> — <a href="https://docs.google.com/spreadsheets/d/1mBxdyWtkovWG7d7KxztSAR37JhTdpv10VbsKycrVeX0/edit" target="_blank" rel="noopener">https://docs.google.com/spreadsheets/d/1mBxdyWtkovWG7d7KxztSAR37JhTdpv10VbsKycrVeX0/edit</a></li>
+    <li><b>Webmail logins / cluster workbook</b> — <a href="https://docs.google.com/spreadsheets/d/13GHypP7Lw_QGkWH7doiwlFMVgqjccOI5I6Tvv1PCiI0/edit" target="_blank" rel="noopener">https://docs.google.com/spreadsheets/d/13GHypP7Lw_QGkWH7doiwlFMVgqjccOI5I6Tvv1PCiI0/edit</a></li>
+    <li><b>Copy of AG Report with added HID info</b> — <a href="https://docs.google.com/spreadsheets/d/1xcT8wTrXaT81w_iD6mwIALQnevxiXl5nCx8DUZ5sMKo/edit" target="_blank" rel="noopener">https://docs.google.com/spreadsheets/d/1xcT8wTrXaT81w_iD6mwIALQnevxiXl5nCx8DUZ5sMKo/edit</a></li>
+  </ul>
+</details>
+
+<script>
+const DATA = {"groups": [{"name": "Aplus batch", "kind": "retail", "hids": [{"hid": 1325, "logins": 91, "cluster": "c0", "name": "Aplus.net (fka Frontier)", "customName": "aplus"}, {"hid": 2062, "logins": null, "cluster": "-", "name": "Aplus.net (fka Frontier)", "customName": "aplus"}, {"hid": 2332, "logins": 14845, "cluster": "c40", "name": "Aplus.net", "customName": "aplus"}, {"hid": 2548, "logins": 5, "cluster": "c40", "name": "Aplus.net (fka Orange Soda)", "customName": "aplus"}, {"hid": 2705, "logins": 49, "cluster": "c28", "name": "Aplus.net (fka Frontier)", "customName": "aplus"}]}, {"name": "placeholder-1", "kind": "placeholder", "hids": []}, {"name": "placeholder-2", "kind": "placeholder", "hids": []}, {"name": "placeholder-3", "kind": "placeholder", "hids": []}, {"name": "rogersrdc", "kind": "customname", "hids": [{"hid": 1266, "logins": 1, "cluster": "c0", "name": null, "customName": "rogersrdc"}, {"hid": 2310, "logins": 1, "cluster": "c8", "name": null, "customName": "rogersrdc"}, {"hid": 1172, "logins": 25, "cluster": "c0", "name": "TELUS - Blink Communications (Oakville Hydro)", "customName": "rogersrdc"}]}, {"name": "northernteldatacorp", "kind": "customname", "hids": [{"hid": 2212, "logins": 41, "cluster": "c26", "name": "Northern Telephone and Data Corp - ISPMail", "customName": "northernteldatacorp"}, {"hid": 2211, "logins": 123, "cluster": "c26", "name": "Northern Telephone and Data Corp - ISPMail", "customName": "northernteldatacorp"}, {"hid": 2209, "logins": 125, "cluster": "c25", "name": "Northern Telephone and Data Corp", "customName": "northernteldatacorp"}, {"hid": 2210, "logins": 131, "cluster": "c26", "name": "Northern Telephone and Data Corp - ISP Mail", "customName": "northernteldatacorp"}]}, {"name": "alestra", "kind": "customname", "hids": [{"hid": 2720, "logins": 28, "cluster": "c75", "name": "Axtel  S.A.B. de C.V. (TAX ID : AXT940727FP8)", "customName": "alestra"}, {"hid": 2464, "logins": 453, "cluster": "c25", "name": "Axtel S.A.B de C.V. (TAX ID: AXT940727FP8)", "customName": "alestra"}]}, {"name": "breatheinternet + windstream + fairpointwebservices", "kind": "customname", "hids": [{"hid": 2318, "logins": 7, "cluster": "c25", "name": "Breathe Internet Ltd.", "customName": "breatheinternet"}, {"hid": 2233, "logins": 525, "cluster": "c26", "name": "Breathe Internet Ltd.", "customName": "breatheinternet"}, {"hid": 775, "logins": 5, "cluster": "c0", "name": "Windstream Communications", "customName": "windstream"}, {"hid": 2819, "logins": 26, "cluster": "c25", "name": "Windstream Business", "customName": "windstream"}, {"hid": 2215, "logins": 1751, "cluster": "c25", "name": "Windstream Services  LLC", "customName": "windstream"}, {"hid": 1563, "logins": 98, "cluster": "c2", "name": "Consolidated Communications Inc", "customName": "fairpointwebservices"}, {"hid": 2170, "logins": 9987, "cluster": "c26", "name": "Consolidated Communications Inc", "customName": "fairpointwebservices"}]}, {"name": "DigitalSpace batch", "kind": "retail", "hids": [{"hid": 2321, "logins": 17, "cluster": "c25", "name": "DigitalSpace.net (fka Safeguard)", "customName": null}, {"hid": 2245, "logins": 31, "cluster": "c40", "name": "DigitalSpace.net (fka Deluxe Website Services)", "customName": "digitalspace"}, {"hid": 1568, "logins": 53, "cluster": "c7", "name": "DigitalSpace.net (fka Dotster FC/Deluxe dfbhosting)", "customName": "digitalspace"}, {"hid": 2730, "logins": 154, "cluster": "c28", "name": "DigitalSpace.net (fka Deluxe Mktg Suite)", "customName": "digitalspace"}, {"hid": 2190, "logins": 316, "cluster": "c25", "name": "DigitalSpace.net (fka UplinkEarth)", "customName": "digitalspace"}, {"hid": 2297, "logins": 454, "cluster": "c25", "name": "DigitalSpace.net (fka x7hosting.com)", "customName": "digitalspace"}, {"hid": 2459, "logins": 869, "cluster": "c40", "name": "DigitalSpace.net (fka Deluxe For Business)", "customName": "digitalspace"}, {"hid": 1134, "logins": 3622, "cluster": "c28", "name": "DigitalSpace.net (fka XO/Consolidated Communications)", "customName": "digitalspace"}, {"hid": 1112, "logins": 12001, "cluster": "c45", "name": "Digitalspace.net", "customName": "digitalspace"}, {"hid": 2588, "logins": null, "cluster": "-", "name": "DigitalSpace.net (fka Deluxe)", "customName": "digitalspace"}]}, {"name": "default", "kind": "infra", "hids": [{"hid": 621, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 2025, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 2350, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 2529, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 2531, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 2559, "logins": 1, "cluster": "c25", "name": null, "customName": "default"}, {"hid": 3741, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 6674, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 6680, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 7345, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 9912, "logins": null, "cluster": "-", "name": null, "customName": "default"}, {"hid": 9938, "logins": null, "cluster": "-", "name": null, "customName": "default"}]}, {"name": "hostpapadefault", "kind": "infra", "hids": [{"hid": 100, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 1884, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 1896, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 2200, "logins": 1, "cluster": "c25", "name": null, "customName": "hostpapadefault"}, {"hid": 2412, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 2628, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 2629, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 2632, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 2786, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 2800, "logins": 1, "cluster": "c0", "name": null, "customName": "hostpapadefault"}, {"hid": 2801, "logins": 1, "cluster": "c2", "name": null, "customName": "hostpapadefault"}, {"hid": 2802, "logins": 2, "cluster": "c7", "name": null, "customName": "hostpapadefault"}, {"hid": 2803, "logins": 2, "cluster": "c8", "name": null, "customName": "hostpapadefault"}, {"hid": 2804, "logins": 1, "cluster": "c7", "name": null, "customName": "hostpapadefault"}, {"hid": 2805, "logins": 1, "cluster": "c25", "name": null, "customName": "hostpapadefault"}, {"hid": 2806, "logins": 1, "cluster": "c26", "name": null, "customName": "hostpapadefault"}, {"hid": 2807, "logins": 1, "cluster": "c28", "name": null, "customName": "hostpapadefault"}, {"hid": 2808, "logins": 1, "cluster": "c30", "name": null, "customName": "hostpapadefault"}, {"hid": 2809, "logins": 1, "cluster": "c35", "name": null, "customName": "hostpapadefault"}, {"hid": 2810, "logins": 2, "cluster": "c38", "name": null, "customName": "hostpapadefault"}, {"hid": 2811, "logins": 1, "cluster": "c40", "name": null, "customName": "hostpapadefault"}, {"hid": 2812, "logins": 2, "cluster": "c45", "name": null, "customName": "hostpapadefault"}, {"hid": 2813, "logins": 2, "cluster": "c50", "name": null, "customName": "hostpapadefault"}, {"hid": 2814, "logins": 1, "cluster": "c75", "name": null, "customName": "hostpapadefault"}, {"hid": 9916, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9924, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9926, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9928, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9930, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9931, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9932, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9933, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9934, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}, {"hid": 9935, "logins": null, "cluster": "-", "name": null, "customName": "hostpapadefault"}]}, {"name": "c30 + c45 + c8", "kind": "cluster", "hids": [{"hid": 1891, "logins": 1, "cluster": "c30", "name": "BT Website Centre", "customName": "BTBranding"}, {"hid": 1111, "logins": 1, "cluster": "c45", "name": "AT&T Website Solutions", "customName": "att2"}, {"hid": 1565, "logins": 10, "cluster": "c8", "name": "Lumen", "customName": null}, {"hid": 1451, "logins": 12, "cluster": "c8", "name": "Covad.net", "customName": null}]}, {"name": "c26", "kind": "cluster", "hids": [{"hid": 2192, "logins": 7, "cluster": "c26", "name": "SCG Cloud Limited", "customName": null}, {"hid": 2333, "logins": 49, "cluster": "c26", "name": "Zetnet.co.uk", "customName": null}]}, {"name": "c0", "kind": "cluster", "hids": [{"hid": 738, "logins": 1, "cluster": "c0", "name": null, "customName": null}, {"hid": 1329, "logins": 1, "cluster": "c0", "name": null, "customName": null}, {"hid": 600, "logins": 1968, "cluster": "c2", "name": "BlueGenesis.com", "customName": null}, {"hid": 1403, "logins": 2, "cluster": "c0", "name": null, "customName": null}, {"hid": 1108, "logins": 2, "cluster": "c0", "name": null, "customName": "cheetah"}, {"hid": 1225, "logins": 2, "cluster": "c0", "name": null, "customName": null}, {"hid": 1098, "logins": 3, "cluster": "c0", "name": "NetEase Inc.", "customName": null}, {"hid": 1094, "logins": 3, "cluster": "c0", "name": "MG Consulting Inc", "customName": null}, {"hid": 1046, "logins": 3, "cluster": "c0", "name": null, "customName": null}, {"hid": 1085, "logins": 3, "cluster": "c0", "name": "Electric Lightwave Inc. (Integra Telecom)", "customName": null}, {"hid": 690, "logins": 6, "cluster": "c0", "name": "Genus Services", "customName": null}, {"hid": 2020, "logins": 8, "cluster": "c0", "name": "Banff.com Inc.", "customName": null}, {"hid": 1290, "logins": 10, "cluster": "c0", "name": "Colorado Valley Internet", "customName": null}, {"hid": 1281, "logins": 10, "cluster": "c0", "name": "SovHost", "customName": null}, {"hid": 1199, "logins": 12, "cluster": "c0", "name": "LatamNet Corporation", "customName": null}, {"hid": 1380, "logins": 15, "cluster": "c0", "name": "aztus.com", "customName": null}, {"hid": 1166, "logins": 19, "cluster": "c0", "name": "TecInfo", "customName": null}, {"hid": 766, "logins": 31, "cluster": "c0", "name": "Domain Directors Pty Ltd", "customName": null}, {"hid": 1191, "logins": 34, "cluster": "c0", "name": "EastonOnline", "customName": null}, {"hid": 941, "logins": 36, "cluster": "c0", "name": "Telephone Service Company", "customName": null}, {"hid": 1315, "logins": 45, "cluster": "c0", "name": "MIS  Inc.", "customName": null}, {"hid": 1330, "logins": 56, "cluster": "c0", "name": "NETtrak LLC", "customName": null}, {"hid": 1049, "logins": 72, "cluster": "c0", "name": "Netphoria", "customName": null}, {"hid": 1196, "logins": 73, "cluster": "c0", "name": "Our Service (hostinglive.net)", "customName": null}, {"hid": 807, "logins": 90, "cluster": "c0", "name": "HostSellers", "customName": null}, {"hid": 1089, "logins": 116, "cluster": "c0", "name": "WTC Communications", "customName": null}, {"hid": 1303, "logins": 132, "cluster": "c0", "name": "Lisco", "customName": null}, {"hid": 782, "logins": 244, "cluster": "c0", "name": "InternetHosting.com", "customName": null}, {"hid": 650, "logins": 441, "cluster": "c0", "name": "MEMORY UPGRADE  SA DE C.V.", "customName": null}]}, {"name": "c7", "kind": "cluster", "hids": [{"hid": 2183, "logins": 3, "cluster": "c7", "name": "Telebec SEC", "customName": null}, {"hid": 2182, "logins": 3, "cluster": "c7", "name": "NorthernTel", "customName": null}, {"hid": 2079, "logins": 5, "cluster": "c7", "name": "Allstream Business Inc", "customName": "allstream"}, {"hid": 1408, "logins": 17, "cluster": "c7", "name": "covadhosting.biz", "customName": null}, {"hid": 1815, "logins": 18, "cluster": "c7", "name": "Northwestel Inc", "customName": null}, {"hid": 2320, "logins": 22, "cluster": "c7", "name": "Allstream Business Inc", "customName": "allstream"}, {"hid": 2319, "logins": 23, "cluster": "c7", "name": "Allstream Business Inc", "customName": "allstream"}, {"hid": 1755, "logins": 29, "cluster": "c7", "name": "BV Communications", "customName": null}, {"hid": 2944, "logins": 74, "cluster": "c7", "name": null, "customName": null}, {"hid": 2019, "logins": 83, "cluster": "c7", "name": "Knight Web Services Inc.", "customName": null}, {"hid": 1929, "logins": 151, "cluster": "c7", "name": "Bell Aliant", "customName": null}, {"hid": 2115, "logins": 176, "cluster": "c7", "name": "EastLink", "customName": null}, {"hid": 1001, "logins": 190, "cluster": "c7", "name": "Primus/Distributel/ICG", "customName": null}, {"hid": 1749, "logins": 280, "cluster": "c7", "name": "User Services", "customName": null}, {"hid": 2325, "logins": 296, "cluster": "c7", "name": null, "customName": "easyonnet"}, {"hid": 2520, "logins": 438, "cluster": "c7", "name": "Rogers Communications Canada Inc (Formerly Shaw Cable Systems G.", "customName": "shaw"}, {"hid": 1928, "logins": 523, "cluster": "c7", "name": "Oubavo Inc  FKA Sasktel Webhosting", "customName": null}, {"hid": 2227, "logins": 576, "cluster": "c7", "name": "Easyhosting (fka Videotron Ltd.)", "customName": "easyhosting2"}, {"hid": 1519, "logins": 1581, "cluster": "c7", "name": "Bell Canada", "customName": null}]}, {"name": "c75", "kind": "cluster", "hids": [{"hid": 2735, "logins": 3, "cluster": "c75", "name": "Puerto Rico Telephone Company  INC - D/B/A Claro Puerto Rico", "customName": null}, {"hid": 2700, "logins": 12, "cluster": "c75", "name": "Telmex Brasil", "customName": null}, {"hid": 2717, "logins": 14, "cluster": "c75", "name": "Radiomovil DIPSA", "customName": null}, {"hid": 2680, "logins": 23, "cluster": "c75", "name": "Claro Chile SpA", "customName": null}, {"hid": 2724, "logins": 33, "cluster": "c75", "name": "TELECOMUNICACIONES DE GUATEMALA S.A.", "customName": null}, {"hid": 2575, "logins": 43, "cluster": "c75", "name": "Claro Peru (Sercotel)", "customName": null}, {"hid": 2734, "logins": 44, "cluster": "c75", "name": "Claro CENAM/El Salvidor (Sercotel)", "customName": null}, {"hid": 2563, "logins": 74, "cluster": "c75", "name": "Consorcio Ecuatoriano de Telecomunicaciones", "customName": null}, {"hid": 2578, "logins": 137, "cluster": "c75", "name": "AMX Argentina S.A.", "customName": null}, {"hid": 2546, "logins": 296, "cluster": "c75", "name": "TRIARA. COM SA DE CV", "customName": null}, {"hid": 2664, "logins": 495, "cluster": "c75", "name": "Compaa Dominicana de Telfonos C. por A.", "customName": null}, {"hid": 2583, "logins": 975, "cluster": "c75", "name": "Telmex Brasil", "customName": null}, {"hid": 2599, "logins": 2934, "cluster": "c75", "name": "Comunicacin Celular S.A Comcel S.A", "customName": null}]}, {"name": "c2", "kind": "cluster", "hids": [{"hid": 1723, "logins": 1, "cluster": "c2", "name": null, "customName": null}, {"hid": 1324, "logins": 1, "cluster": "c2", "name": null, "customName": "hostopiatest"}, {"hid": 1304, "logins": 2, "cluster": "c2", "name": null, "customName": null}, {"hid": 1429, "logins": 2, "cluster": "c2", "name": "Execulink Telecom Inc.", "customName": null}, {"hid": 1552, "logins": 2, "cluster": "c2", "name": "Inactive Technologies  LLC", "customName": null}, {"hid": 1546, "logins": 3, "cluster": "c2", "name": null, "customName": "mediacom"}, {"hid": 1472, "logins": 4, "cluster": "c2", "name": "hostingGURUS.net", "customName": null}, {"hid": 1469, "logins": 4, "cluster": "c2", "name": null, "customName": null}, {"hid": 1368, "logins": 9, "cluster": "c2", "name": "Hostplus.ca (Servicad)", "customName": null}, {"hid": 1635, "logins": 12, "cluster": "c2", "name": "SJ Namo Inc.", "customName": null}, {"hid": 1346, "logins": 24, "cluster": "c2", "name": "TOAST.net", "customName": null}, {"hid": 1348, "logins": 33, "cluster": "c2", "name": "Interactive Graphics  Inc.", "customName": null}, {"hid": 1454, "logins": 49, "cluster": "c2", "name": "dotEarth", "customName": null}, {"hid": 1385, "logins": 58, "cluster": "c2", "name": "Edifika.Net", "customName": null}, {"hid": 1405, "logins": 121, "cluster": "c2", "name": "HostSite.com Inc. (123cheapdomains.com)", "customName": null}, {"hid": 1534, "logins": 177, "cluster": "c2", "name": "iSelect Internet Inc. dba Net Wizards", "customName": null}, {"hid": 754, "logins": 181, "cluster": "c2", "name": null, "customName": "hostopiatest"}, {"hid": 2087, "logins": 216, "cluster": "c2", "name": "Lumen", "customName": null}, {"hid": 1430, "logins": 218, "cluster": "c2", "name": "Mediacom Communications- Do not bill", "customName": "mediacom"}, {"hid": 1569, "logins": 270, "cluster": "c2", "name": "TBAYTEL", "customName": null}, {"hid": 1460, "logins": 991, "cluster": "c2", "name": "Bell Canada", "customName": "bell"}, {"hid": 600, "logins": 1968, "cluster": "c2", "name": "BlueGenesis.com", "customName": null}, {"hid": 1461, "logins": 4472, "cluster": "c2", "name": "Bell Canada (CBSS)", "customName": "bell"}]}, {"name": "c40", "kind": "cluster", "hids": [{"hid": 3141, "logins": 1, "cluster": "c40", "name": "The ServiceMaster Company LLC", "customName": null}, {"hid": 3188, "logins": 1, "cluster": "c40", "name": "Millennium Communications", "customName": null}, {"hid": 3198, "logins": 2, "cluster": "c40", "name": "Wireonfire", "customName": null}, {"hid": 2861, "logins": 2, "cluster": "c40", "name": "Atlanta Journal Constitution", "customName": null}, {"hid": 3124, "logins": 2, "cluster": "c40", "name": "First Financial Security Inc.", "customName": null}, {"hid": 3192, "logins": 2, "cluster": "c40", "name": null, "customName": null}, {"hid": 3201, "logins": 3, "cluster": "c40", "name": "Coastline", "customName": null}, {"hid": 2535, "logins": 3, "cluster": "c40", "name": "Deluxe", "customName": null}, {"hid": 3202, "logins": 3, "cluster": "c40", "name": "EA Media", "customName": null}, {"hid": 3182, "logins": 6, "cluster": "c40", "name": "Irun LTD", "customName": null}, {"hid": 3160, "logins": 6, "cluster": "c40", "name": "Footprints Design dba DakotaQ Internet Services", "customName": null}, {"hid": 3156, "logins": 6, "cluster": "c40", "name": "Advansys Limited", "customName": null}, {"hid": 3158, "logins": 7, "cluster": "c40", "name": "WG Studios", "customName": null}, {"hid": 3151, "logins": 7, "cluster": "c40", "name": "E-Marketing Associates", "customName": null}, {"hid": 3163, "logins": 8, "cluster": "c40", "name": "Tech Stream (Formerly Direct Connect 1  LLC)", "customName": null}, {"hid": 3172, "logins": 8, "cluster": "c40", "name": "XS Media", "customName": null}, {"hid": 3129, "logins": 9, "cluster": "c40", "name": "Thomson Reuters", "customName": null}, {"hid": 3131, "logins": 10, "cluster": "c40", "name": "Blackhawk Acquisition dba Promax", "customName": null}, {"hid": 3146, "logins": 10, "cluster": "c40", "name": "Jimmy Butler  - D1311672", "customName": null}, {"hid": 3164, "logins": 11, "cluster": "c40", "name": "Redline", "customName": null}, {"hid": 3199, "logins": 11, "cluster": "c40", "name": "Bitsculptor", "customName": null}, {"hid": 3195, "logins": 16, "cluster": "c40", "name": "IT Xtructures INC", "customName": null}, {"hid": 3184, "logins": 16, "cluster": "c40", "name": "TCGEP Designs", "customName": null}, {"hid": 3187, "logins": 16, "cluster": "c40", "name": "Mosaic Data Services  Inc.", "customName": null}, {"hid": 3177, "logins": 17, "cluster": "c40", "name": "VA-Broadband LLC", "customName": null}, {"hid": 3162, "logins": 20, "cluster": "c40", "name": "OneCore Media", "customName": null}, {"hid": 3193, "logins": 21, "cluster": "c40", "name": "RealtyTech", "customName": null}, {"hid": 3142, "logins": 23, "cluster": "c40", "name": "dbVisionWorks", "customName": null}, {"hid": 3161, "logins": 28, "cluster": "c40", "name": "Agentwebsite Inc", "customName": null}, {"hid": 3139, "logins": 30, "cluster": "c40", "name": "iSelect Internet Inc. dba Net Wizards", "customName": null}, {"hid": 3196, "logins": 32, "cluster": "c40", "name": "Soluntec S.A.S", "customName": null}, {"hid": 3136, "logins": 36, "cluster": "c40", "name": "ConsulNet Computing Inc.", "customName": null}, {"hid": 3150, "logins": 38, "cluster": "c40", "name": "Landel Telecom", "customName": null}, {"hid": 3166, "logins": 40, "cluster": "c40", "name": "webaloo.com", "customName": null}, {"hid": 3122, "logins": 42, "cluster": "c40", "name": "TCB Services  LLC", "customName": null}, {"hid": 3134, "logins": 44, "cluster": "c40", "name": "ZipLocal LP", "customName": null}, {"hid": 3128, "logins": 47, "cluster": "c40", "name": "RV Web Services -  Trader Interactive", "customName": null}, {"hid": 3159, "logins": 52, "cluster": "c40", "name": "The Treeline Group Inc.", "customName": null}, {"hid": 3145, "logins": 52, "cluster": "c40", "name": "Bisso Technologies LLC", "customName": null}, {"hid": 3168, "logins": 54, "cluster": "c40", "name": "Cal.net/NCBB", "customName": null}, {"hid": 3115, "logins": 63, "cluster": "c40", "name": "Vortex Solution", "customName": null}, {"hid": 3119, "logins": 66, "cluster": "c40", "name": "Boats Group", "customName": null}, {"hid": 3137, "logins": 70, "cluster": "c40", "name": "IP Networks", "customName": null}, {"hid": 3144, "logins": 74, "cluster": "c40", "name": "Rivah.net - The Union River Telephone Company", "customName": null}, {"hid": 3167, "logins": 78, "cluster": "c40", "name": "Bartnet IP LLC", "customName": null}, {"hid": 3135, "logins": 81, "cluster": "c40", "name": "LiveNet Commuications", "customName": null}, {"hid": 3114, "logins": 83, "cluster": "c40", "name": "Commercial Web Services", "customName": null}, {"hid": 3170, "logins": 90, "cluster": "c40", "name": "theWISP.net  Inc. (DC Computers)", "customName": null}, {"hid": 3127, "logins": 101, "cluster": "c40", "name": "Premper", "customName": null}, {"hid": 3174, "logins": 134, "cluster": "c40", "name": "Renaissance Internet", "customName": null}, {"hid": 3126, "logins": 136, "cluster": "c40", "name": "Wowrack", "customName": null}, {"hid": 3169, "logins": 186, "cluster": "c40", "name": "Douglas Fast Net", "customName": null}, {"hid": 3123, "logins": 218, "cluster": "c40", "name": "True Value Company", "customName": null}, {"hid": 3116, "logins": 237, "cluster": "c40", "name": "Merle Norman Cosmetics", "customName": null}, {"hid": 3130, "logins": 311, "cluster": "c40", "name": "Maui Global Communications", "customName": null}, {"hid": 3181, "logins": 349, "cluster": "c40", "name": "Blue Frog Inc.", "customName": null}, {"hid": 3108, "logins": 443, "cluster": "c40", "name": "Professional Assist Corporation", "customName": null}, {"hid": 3102, "logins": 831, "cluster": "c40", "name": "Tucows Inc.", "customName": null}, {"hid": 3104, "logins": 1161, "cluster": "c40", "name": "National Rural Telecommunications Cooperatives", "customName": null}, {"hid": 3109, "logins": 1441, "cluster": "c40", "name": "Copper.net", "customName": null}, {"hid": 3100, "logins": 2003, "cluster": "c40", "name": "Everyone.net (fka Deluxe Website Services)", "customName": null}, {"hid": 3113, "logins": 2553, "cluster": "c40", "name": "Enterprise Diversified  Inc", "customName": null}, {"hid": 3111, "logins": 2590, "cluster": "c40", "name": "Wyoming.com", "customName": null}]}, {"name": "c28", "kind": "cluster", "hids": [{"hid": 4700, "logins": 16, "cluster": "c28", "name": "Alliance Virtual Offices", "customName": null}, {"hid": 2789, "logins": 18, "cluster": "c28", "name": null, "customName": null}, {"hid": 2900, "logins": 47, "cluster": "c28", "name": "CML Media Corp. dba Mopro", "customName": null}, {"hid": 2606, "logins": 126, "cluster": "c28", "name": "Advernology  Inc.", "customName": null}, {"hid": 2785, "logins": 2749, "cluster": "c28", "name": "Alaska Communications", "customName": null}, {"hid": 2658, "logins": 4425, "cluster": "c28", "name": "Lumos Telephone", "customName": null}, {"hid": 2883, "logins": 8646, "cluster": "c28", "name": "Rise Broadband", "customName": null}]}, {"name": "c25", "kind": "cluster", "hids": [{"hid": 2559, "logins": 1, "cluster": "c25", "name": null, "customName": "default"}, {"hid": 1924, "logins": 1, "cluster": "c25", "name": "Telwest Network Services", "customName": null}, {"hid": 2177, "logins": 1, "cluster": "c25", "name": null, "customName": null}, {"hid": 2096, "logins": 1, "cluster": "c25", "name": "Talk Talk Business Direct Limited", "customName": "talktalk"}, {"hid": 2076, "logins": 2, "cluster": "c25", "name": "SCG Cloud Limited", "customName": null}, {"hid": 1946, "logins": 2, "cluster": "c25", "name": "Telecom Evolution", "customName": "telecomevolution"}, {"hid": 1899, "logins": 3, "cluster": "c25", "name": "HughesNet Web Services", "customName": null}, {"hid": 1535, "logins": 3, "cluster": "c25", "name": null, "customName": null}, {"hid": 2070, "logins": 4, "cluster": "c25", "name": "GCI Network Solutions Limited", "customName": null}, {"hid": 2586, "logins": 4, "cluster": "c25", "name": "MegaPath", "customName": "megapathhosting"}, {"hid": 2346, "logins": 5, "cluster": "c25", "name": "Cal.net", "customName": "motherlodeinternet"}, {"hid": 1878, "logins": 7, "cluster": "c25", "name": "Oubavo Inc  formerly Sasktel Webhosting", "customName": null}, {"hid": 2157, "logins": 8, "cluster": "c25", "name": "Comcity LLC", "customName": null}, {"hid": 1750, "logins": 8, "cluster": "c25", "name": "Talk Talk Business Direct Limited", "customName": "talktalk"}, {"hid": 1863, "logins": 9, "cluster": "c25", "name": "Launchnet Inc.", "customName": null}, {"hid": 1976, "logins": 11, "cluster": "c25", "name": "Central Coast Internet", "customName": null}, {"hid": 1834, "logins": 12, "cluster": "c25", "name": "myebiz.ca", "customName": null}, {"hid": 2149, "logins": 13, "cluster": "c25", "name": "OC Hosting", "customName": null}, {"hid": 1926, "logins": 13, "cluster": "c25", "name": null, "customName": null}, {"hid": 1751, "logins": 15, "cluster": "c25", "name": "Colt Technology Services", "customName": null}, {"hid": 2082, "logins": 16, "cluster": "c25", "name": "Westel  Inc.", "customName": null}, {"hid": 2175, "logins": 20, "cluster": "c25", "name": "MySiteSpace.com", "customName": null}, {"hid": 1889, "logins": 22, "cluster": "c25", "name": "Logix Data Products Inc.", "customName": null}, {"hid": 2431, "logins": 25, "cluster": "c25", "name": "VIA Hosting Services", "customName": null}, {"hid": 2126, "logins": 25, "cluster": "c25", "name": "Serrahost   Inc.", "customName": null}, {"hid": 2427, "logins": 25, "cluster": "c25", "name": "N49 Interactive Inc.", "customName": null}, {"hid": 1634, "logins": 28, "cluster": "c25", "name": "iSelect Internet Inc. dba Net Wizards", "customName": null}, {"hid": 1844, "logins": 35, "cluster": "c25", "name": "Oubavo Inc", "customName": null}, {"hid": 2326, "logins": 36, "cluster": "c25", "name": "Wide Open West Finance  LLC", "customName": null}, {"hid": 2276, "logins": 38, "cluster": "c25", "name": "Talk Talk Business Direct Limited", "customName": "talktalk"}, {"hid": 1953, "logins": 39, "cluster": "c25", "name": "Telecom Evolution", "customName": "telecomevolution"}, {"hid": 2485, "logins": 42, "cluster": "c25", "name": "Astound Broadband", "customName": null}, {"hid": 2567, "logins": 68, "cluster": "c25", "name": "MegaPath", "customName": "megapathhosting"}, {"hid": 2313, "logins": 73, "cluster": "c25", "name": "ABI Hosting", "customName": null}, {"hid": 2478, "logins": 74, "cluster": "c25", "name": "Wide Open West Finance  LLC", "customName": null}, {"hid": 1797, "logins": 79, "cluster": "c25", "name": "Volunteer Wireless Inc. (dba Ben Lomand Telephone Co-op Inc.)", "customName": null}, {"hid": 2484, "logins": 79, "cluster": "c25", "name": "Astound Broadband", "customName": null}, {"hid": 1763, "logins": 94, "cluster": "c25", "name": "MSW Interactive Designs  LLC", "customName": null}, {"hid": 1973, "logins": 111, "cluster": "c25", "name": "Telecom Evolution", "customName": "telecomevolution"}, {"hid": 2566, "logins": 126, "cluster": "c25", "name": "Windstream Business", "customName": null}, {"hid": 2609, "logins": 192, "cluster": "c25", "name": "MegaPath Corporation", "customName": "megapathhosting"}, {"hid": 2557, "logins": 325, "cluster": "c25", "name": "Consolidated Communication Enterprise Services Inc.", "customName": "myccinet"}, {"hid": 2144, "logins": 325, "cluster": "c25", "name": "NCI Datacom Inc", "customName": null}, {"hid": 2345, "logins": 339, "cluster": "c25", "name": "cal.net", "customName": "motherlodeinternet"}, {"hid": 1785, "logins": 688, "cluster": "c25", "name": "SuperMedia Inc. / Thryv  Inc.", "customName": null}, {"hid": 2382, "logins": 762, "cluster": "c25", "name": "Register.com", "customName": "registercom"}, {"hid": 3722, "logins": 1655, "cluster": "c25", "name": "Everfast Fiber Networks  LLC.", "customName": null}, {"hid": 2560, "logins": 14179, "cluster": "c25", "name": "Consolidated Communication Enterprise Services Inc.", "customName": "myccinet"}]}, {"name": "c50", "kind": "cluster", "hids": [{"hid": 2354, "logins": 1, "cluster": "c50", "name": null, "customName": null}, {"hid": 2841, "logins": 2, "cluster": "c50", "name": null, "customName": null}, {"hid": 2891, "logins": 3, "cluster": "c50", "name": "Vodafone Ireland", "customName": null}, {"hid": 2890, "logins": 3, "cluster": "c50", "name": null, "customName": null}, {"hid": 3775, "logins": 5, "cluster": "c50", "name": "Adicio Asia - 3775", "customName": null}, {"hid": 2835, "logins": 11, "cluster": "c50", "name": "Vodacom South Africa (Pty) Ltd", "customName": null}, {"hid": 2885, "logins": 20, "cluster": "c50", "name": "Vodafone Albania", "customName": null}, {"hid": 3777, "logins": 39, "cluster": "c50", "name": "Speednames DK - 3777", "customName": null}, {"hid": 2799, "logins": 42, "cluster": "c50", "name": "A1 Digital International GmbH & Co KG", "customName": "a1telekomaustria"}, {"hid": 2868, "logins": 66, "cluster": "c50", "name": "Telecel Ghana", "customName": null}, {"hid": 3778, "logins": 98, "cluster": "c50", "name": "Speednames EU - 3778", "customName": null}, {"hid": 3773, "logins": 103, "cluster": "c50", "name": "Speednames Asia - 3773", "customName": null}, {"hid": 3779, "logins": 439, "cluster": "c50", "name": "Speednames UK - 3779", "customName": null}, {"hid": 2426, "logins": 870, "cluster": "c50", "name": "Vodafone - Panafon S.A.", "customName": "vodafonegr"}, {"hid": 2842, "logins": 900, "cluster": "c50", "name": "Sonatel", "customName": null}, {"hid": 2362, "logins": 1283, "cluster": "c50", "name": "Vodafone Romania S.A.", "customName": null}, {"hid": 2860, "logins": 1536, "cluster": "c50", "name": "Sonatel SA", "customName": null}, {"hid": 2726, "logins": 3777, "cluster": "c50", "name": "Telenor Sverige AB", "customName": null}, {"hid": 3780, "logins": 5014, "cluster": "c50", "name": "Speednames Asia - 3773", "customName": "cdn"}, {"hid": 2935, "logins": 5476, "cluster": "c50", "name": "Vodacom South Africa (Pty) Ltd", "customName": null}, {"hid": 2612, "logins": 10625, "cluster": "c50", "name": "Telefonica Germany GmbH & Co OHG", "customName": null}, {"hid": 2788, "logins": 11938, "cluster": "c50", "name": "PXC", "customName": null}, {"hid": 2574, "logins": 28116, "cluster": "c50", "name": "Telefonica Germany GmbH & Co. OHG", "customName": null}]}], "deferred2027": [{"hid": 2881, "logins": 6824, "cluster": "c2", "name": "Tbaytel", "customName": null}, {"hid": 2340, "logins": 60931, "cluster": "c7", "name": "SaskTel", "customName": null}, {"hid": 2422, "logins": 7051, "cluster": "c38", "name": "EarthLink  Inc.", "customName": null}, {"hid": 2519, "logins": 41741, "cluster": "c75", "name": "TRIARA.COM SA DE CV", "customName": "telmex"}, {"hid": 2741, "logins": null, "cluster": "c60", "name": "Telenor Norge AS c/o Fakturamottak", "customName": null}], "suspended": [{"hid": 2870, "logins": null, "customName": "digitalspaceforfive", "reason": "Suspended \u2014 digitalspaceforfive custom_name group; excluded from all batches"}, {"hid": 2871, "logins": null, "customName": "digitalspaceforfive", "reason": "Suspended \u2014 digitalspaceforfive custom_name group; excluded from all batches"}, {"hid": 2872, "logins": null, "customName": "digitalspaceforfive", "reason": "Suspended \u2014 digitalspaceforfive custom_name group; excluded from all batches"}, {"hid": 2874, "logins": null, "customName": "digitalspaceforfive", "reason": "Suspended \u2014 digitalspaceforfive custom_name group; excluded from all batches"}, {"hid": 2875, "logins": null, "customName": "digitalspaceforfive", "reason": "Suspended \u2014 digitalspaceforfive custom_name group; excluded from all batches"}], "pullGroupNames": ["alestra", "breatheinternet", "fairpointwebservices", "rogersrdc", "windstream", "northernteldatacorp"], "droppedClusters": ["c35", "c38"], "clusterExcluded": {"c0": [{"hid": 849, "reason": "excluded (already scheduled elsewhere)", "name": "EasyHosting.com (fka Telus)"}, {"hid": 626, "reason": "excluded (already scheduled elsewhere)", "name": "Easyhosting.com"}, {"hid": 1325, "reason": "pulled: Aplus batch", "name": "Aplus.net (fka Frontier)"}, {"hid": 1172, "reason": "pulled: rogersrdc", "name": "TELUS - Blink Communications (Oakville Hydro)"}, {"hid": 1251, "reason": "excluded (already scheduled elsewhere)", "name": null}, {"hid": 775, "reason": "pulled: windstream", "name": "Windstream Communications"}, {"hid": 2800, "reason": "pulled: hostpapadefault", "name": null}, {"hid": 1266, "reason": "pulled: rogersrdc", "name": null}], "c2": [{"hid": 2881, "reason": "deferred to 2027", "name": "Tbaytel"}, {"hid": 1563, "reason": "pulled: fairpointwebservices", "name": "Consolidated Communications Inc"}, {"hid": 2801, "reason": "pulled: hostpapadefault", "name": null}], "c7": [{"hid": 2340, "reason": "deferred to 2027", "name": "SaskTel"}, {"hid": 3461, "reason": "excluded (already scheduled elsewhere)", "name": "HostPapa (portal.hostpapa.com)"}, {"hid": 1568, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka Dotster FC/Deluxe dfbhosting)"}, {"hid": 2193, "reason": "excluded (already scheduled elsewhere)", "name": "EasyHosting.com (fka Synergy)"}, {"hid": 2398, "reason": "excluded (already scheduled elsewhere)", "name": "EasyHosting.com (fka Cogeco)"}, {"hid": 2399, "reason": "excluded (already scheduled elsewhere)", "name": "EasyHosting.com (fka Cogeco)"}, {"hid": 2802, "reason": "pulled: hostpapadefault", "name": null}, {"hid": 2804, "reason": "pulled: hostpapadefault", "name": null}], "c8": [{"hid": 2803, "reason": "pulled: hostpapadefault", "name": null}, {"hid": 2310, "reason": "pulled: rogersrdc", "name": null}], "c25": [{"hid": 2215, "reason": "pulled: windstream", "name": "Windstream Services  LLC"}, {"hid": 2297, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka x7hosting.com)"}, {"hid": 2464, "reason": "pulled: alestra", "name": "Axtel S.A.B de C.V. (TAX ID: AXT940727FP8)"}, {"hid": 2190, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka UplinkEarth)"}, {"hid": 2209, "reason": "pulled: northernteldatacorp", "name": "Northern Telephone and Data Corp"}, {"hid": 2207, "reason": "excluded (already scheduled elsewhere)", "name": "Hostpapa.ca (fka nebshosting.ca)"}, {"hid": 2819, "reason": "pulled: windstream", "name": "Windstream Business"}, {"hid": 2321, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka Safeguard)"}, {"hid": 2318, "reason": "pulled: breatheinternet", "name": "Breathe Internet Ltd."}, {"hid": 2805, "reason": "pulled: hostpapadefault", "name": null}, {"hid": 2200, "reason": "pulled: hostpapadefault", "name": null}], "c26": [{"hid": 2170, "reason": "pulled: fairpointwebservices", "name": "Consolidated Communications Inc"}, {"hid": 2233, "reason": "pulled: breatheinternet", "name": "Breathe Internet Ltd."}, {"hid": 2210, "reason": "pulled: northernteldatacorp", "name": "Northern Telephone and Data Corp - ISP Mail"}, {"hid": 2211, "reason": "pulled: northernteldatacorp", "name": "Northern Telephone and Data Corp - ISPMail"}, {"hid": 2212, "reason": "pulled: northernteldatacorp", "name": "Northern Telephone and Data Corp - ISPMail"}, {"hid": 2806, "reason": "pulled: hostpapadefault", "name": null}], "c28": [{"hid": 1134, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka XO/Consolidated Communications)"}, {"hid": 2730, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka Deluxe Mktg Suite)"}, {"hid": 2705, "reason": "pulled: Aplus batch", "name": "Aplus.net (fka Frontier)"}, {"hid": 2807, "reason": "pulled: hostpapadefault", "name": null}], "c30": [{"hid": 2808, "reason": "pulled: hostpapadefault", "name": null}], "c35": [{"hid": 2809, "reason": "pulled: hostpapadefault", "name": null}], "c38": [{"hid": 2422, "reason": "deferred to 2027", "name": "EarthLink  Inc."}, {"hid": 2810, "reason": "pulled: hostpapadefault", "name": null}], "c40": [{"hid": 2332, "reason": "pulled: Aplus batch", "name": "Aplus.net"}, {"hid": 2459, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka Deluxe For Business)"}, {"hid": 2245, "reason": "pulled: DigitalSpace batch", "name": "DigitalSpace.net (fka Deluxe Website Services)"}, {"hid": 2548, "reason": "pulled: Aplus batch", "name": "Aplus.net (fka Orange Soda)"}, {"hid": 2811, "reason": "pulled: hostpapadefault", "name": null}], "c45": [{"hid": 1112, "reason": "pulled: DigitalSpace batch", "name": "Digitalspace.net"}, {"hid": 2812, "reason": "pulled: hostpapadefault", "name": null}], "c50": [{"hid": 2813, "reason": "pulled: hostpapadefault", "name": null}], "c75": [{"hid": 2519, "reason": "deferred to 2027", "name": "TRIARA.COM SA DE CV"}, {"hid": 2720, "reason": "pulled: alestra", "name": "Axtel  S.A.B. de C.V. (TAX ID : AXT940727FP8)"}, {"hid": 2814, "reason": "pulled: hostpapadefault", "name": null}]}};
+const CAP = 5;
+const CAPPED_BATCH_COUNT = 4;
+
+const HOLIDAYS = {
+  '2026-01-01': [{name:"New Year's Day", country:'CA'}],
+  '2026-02-16': [{name:'Family Day', country:'CA'}],
+  '2026-04-03': [{name:'Good Friday', country:'CA'}],
+  '2026-05-18': [{name:'Victoria Day', country:'CA'}],
+  '2026-07-01': [{name:'Canada Day', country:'CA'}],
+  '2026-08-03': [{name:'Civic Holiday', country:'CA'}],
+  '2026-09-07': [{name:'Labour Day', country:'CA'}],
+  '2026-10-01': [{name:"Defender's Day", country:'UA'}],
+  '2026-10-12': [{name:'Thanksgiving', country:'CA'}],
+  '2026-11-11': [{name:'Remembrance Day', country:'CA'}],
+  '2026-12-25': [{name:'Christmas Day', country:'CA'}, {name:'Orthodox Christmas Day', country:'UA'}],
+  '2026-12-26': [{name:'Boxing Day', country:'CA'}],
+  '2026-12-15': [{name:'Code freeze (Christmas/New Year)', country:'FREEZE'}],
+  '2026-12-22': [{name:'Code freeze (Christmas/New Year)', country:'FREEZE'}],
+  '2026-12-29': [{name:'Code freeze (Christmas/New Year)', country:'FREEZE'}],
+  '2027-01-05': [{name:'Code freeze (Christmas/New Year)', country:'FREEZE'}],
+  '2027-01-01': [{name:"New Year's Day", country:'CA'}, {name:"New Year's Day", country:'UA'}],
+  '2027-02-15': [{name:'Family Day', country:'CA'}],
+  '2027-03-09': [{name:"Women's Day (Observed)", country:'UA'}],
+  '2027-03-26': [{name:'Good Friday', country:'CA'}],
+  '2027-04-13': [{name:'Orthodox Easter (Observed)', country:'UA'}],
+  '2027-05-24': [{name:'Victoria Day', country:'CA'}],
+  '2027-07-01': [{name:'Canada Day', country:'CA'}],
+  '2027-08-02': [{name:'Civic Holiday', country:'CA'}],
+  '2027-09-06': [{name:'Labour Day', country:'CA'}],
+  '2027-10-11': [{name:'Thanksgiving', country:'CA'}],
+  '2027-11-11': [{name:'Remembrance Day', country:'CA'}],
+  '2027-12-25': [{name:'Christmas Day', country:'CA'}],
+  '2027-12-27': [{name:'Boxing Day (observed)', country:'CA'}],
+  '2028-01-01': [{name:"New Year's Day", country:'CA'}],
+  '2028-02-21': [{name:'Family Day', country:'CA'}],
+  '2028-04-14': [{name:'Good Friday', country:'CA'}],
+  '2028-05-22': [{name:'Victoria Day', country:'CA'}],
+  '2028-07-01': [{name:'Canada Day', country:'CA'}],
+  '2028-08-07': [{name:'Civic Holiday', country:'CA'}],
+  '2028-09-04': [{name:'Labour Day', country:'CA'}],
+  '2028-10-09': [{name:'Thanksgiving', country:'CA'}],
+  '2028-11-11': [{name:'Remembrance Day', country:'CA'}],
+  '2028-12-25': [{name:'Christmas Day', country:'CA'}],
+  '2028-12-26': [{name:'Boxing Day', country:'CA'}],
+};
+
+function isoDate(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function fmtShort(d){ return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function isTuesday(d){ return d.getDay()===2; }
+function holidaysOn(d){ return HOLIDAYS[isoDate(d)] || []; }
+function isHoliday(d){ return holidaysOn(d).length > 0; }
+function holidaysInRange(start, end){
+  const out = [];
+  let c = new Date(start);
+  while (c <= end) {
+    holidaysOn(c).forEach(h => out.push({date: new Date(c), name: h.name, country: h.country}));
+    c = addDays(c, 1);
+  }
+  return out;
+}
+function nextRolloutDay(d){ let c=new Date(d); while(!isTuesday(c)||isHoliday(c)) c=addDays(c,1); return c; }
+function followingRolloutDay(d){ return nextRolloutDay(addDays(d,1)); }
+function subtractBusinessDays(d,n){ let c=new Date(d),rem=n; while(rem>0){ c=addDays(c,-1); const w=c.getDay(); if(w!==0&&w!==6) rem--; } return c; }
+// Lead time is driven by batch kind, not the capped/uncapped position: custom_name
+// (branding) batches -- retail, the six discovered custom_name groups, and the
+// internal default/hostpapadefault custom_name groups -- all need 3 days; only
+// clusters need 7.
+function leadDaysFor(kind){ return kind === 'cluster' ? 7 : 3; }
+function chunk(arr,size){ const out=[]; for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out; }
+
+let scheduleDays = [];
+
+function buildSchedule(){
+  const startStr = '2026-09-29'; // fixed -- ask Claude to update this if the start date needs to change
+  let cursor = nextRolloutDay(parseDate(startStr));
+  scheduleDays = [];
+  let dayNum = 0;
+  let seqNum = 0;
+  let batchesSoFar = 0;
+
+  // Compressed cadence, tied to these specific batches (not their sequence position):
+  // once one of these rolls out, the next batch alternates Tue -> Thu (+2 days) ->
+  // Tue (+5 days) instead of a full week, packing more value in before the code freeze.
+  const COMPRESS_TRIGGER_GROUPS = ['alestra','breatheinternet','fairpointwebservices','rogersrdc','windstream','default'];
+  function compressedAdvance(prevDate){
+    const dow = prevDate.getDay(); // 2 = Tue, 4 = Thu
+    let next = addDays(prevDate, dow === 2 ? 2 : 5);
+    while (!((next.getDay() === 2 || next.getDay() === 4) && !isHoliday(next))) {
+      next = addDays(next, 1);
+    }
+    return next;
+  }
+
+  DATA.groups.forEach((group, gi) => {
+    let batches;
+    if (group.kind === 'placeholder' || group.kind === 'cluster') {
+      // Clusters are never split across multiple days, regardless of position or
+      // cap -- a cluster upgrade is all-or-nothing, unlike retail/custom_name
+      // groups which can still be forced to split if they land in a capped slot.
+      batches = [group.hids];
+    } else if (batchesSoFar < CAPPED_BATCH_COUNT) {
+      const capsLeft = CAPPED_BATCH_COUNT - batchesSoFar;
+      batches = group.hids.length <= CAP ? [group.hids] : chunk(group.hids, CAP);
+      if (batches.length > capsLeft) {
+        const cappedPart = batches.slice(0, capsLeft).flat();
+        const remainder = group.hids.slice(cappedPart.length);
+        batches = chunk(cappedPart, CAP);
+        if (remainder.length) batches.push(remainder);
+      }
+    } else {
+      batches = [group.hids];
+    }
+
+    batches.forEach((batch, bi) => {
+      dayNum++;
+      if (group.kind !== 'placeholder') { batchesSoFar++; seqNum++; }
+      // Clusters are always exempt from the cap designation too -- they were
+      // never limited to 5, so they never get the capped tag/lead-time even if
+      // they land in one of the first 4 positions. Placeholders aren't real
+      // batches at all, so they're exempt too and don't consume any of the
+      // 4-batch capped budget.
+      const isCapped = (group.kind === 'cluster' || group.kind === 'placeholder') ? false : (batchesSoFar <= CAPPED_BATCH_COUNT);
+      scheduleDays.push({
+        dayNum, seqNum: group.kind === 'placeholder' ? null : seqNum, date: new Date(cursor), group: group.name, kind: group.kind,
+        partOf: batches.length > 1 ? (bi+1) + '/' + batches.length : null,
+        hids: batch, capped: isCapped, isPlaceholder: group.kind === 'placeholder'
+      });
+      cursor = COMPRESS_TRIGGER_GROUPS.includes(group.name) ? compressedAdvance(cursor) : followingRolloutDay(cursor);
+    });
+  });
+
+  // Monitoring now runs the days immediately following each rollout Tuesday,
+  // right up until the next scheduled batch -- no separate week is blocked out.
+  scheduleDays.forEach((d, i) => {
+    d.monitorStart = addDays(d.date, 1);
+    d.monitorEnd = i < scheduleDays.length - 1 ? addDays(scheduleDays[i+1].date, -1) : null;
+  });
+
+  // Any gap longer than a normal week (e.g. the Christmas/New Year code freeze) gets
+  // its own explicit rows in the schedule -- one per work-week within the freeze --
+  // rather than only showing up as a monitoring-window badge. The displayed range
+  // uses the official freeze policy dates (Fri Dec 11, 2026 - Fri Jan 8, 2027), not
+  // the raw scheduling gap.
+  const CODE_FREEZE_START = new Date(2026, 11, 11);
+  const CODE_FREEZE_END = new Date(2027, 0, 8);
+
+  function buildFreezeWeeks(start, end){
+    const weeks = [];
+    let cur = new Date(start);
+    while (cur <= end) {
+      const dow = cur.getDay(); // 1=Mon .. 5=Fri
+      let rowEnd = dow === 5 ? new Date(cur) : addDays(cur, 5 - dow);
+      if (rowEnd > end) rowEnd = new Date(end);
+      weeks.push({ start: new Date(cur), end: rowEnd });
+      if (rowEnd.getDay() !== 5) break;
+      cur = addDays(rowEnd, 3); // Sat, Sun, Mon -> next Monday
+    }
+    return weeks;
+  }
+  const freezeWeeks = buildFreezeWeeks(CODE_FREEZE_START, CODE_FREEZE_END)
+    .filter(w => isoDate(w.start) !== isoDate(w.end));
+
+  const withFreeze = [];
+  scheduleDays.forEach((d, i) => {
+    withFreeze.push(d);
+    const next = scheduleDays[i + 1];
+    if (next && (next.date - d.date) > 14 * 86400000) {
+      freezeWeeks.forEach(w => {
+        withFreeze.push({
+          isFreeze: true, kind: 'freeze', dayNum: null, capped: null, partOf: null, hids: [],
+          rangeStart: w.start, rangeEnd: w.end,
+          afterGroup: d.group, beforeGroup: next.group
+        });
+      });
+    }
+  });
+  scheduleDays = withFreeze;
+
+  renderAll();
+}
+
+function tagFor(kind, name){
+  if (kind === 'retail') {
+    return name.toLowerCase().includes('aplus')
+      ? '<span class="tag tag-retail-aplus">Aplus</span>'
+      : '<span class="tag tag-retail-ds">DigitalSpace</span>';
+  }
+  if (kind === 'customname') return '<span class="tag tag-customname">custom_name: ' + name + '</span>';
+  if (kind === 'infra') return '<span class="tag tag-infra">custom_name: ' + name + ' (internal)</span>';
+  if (kind === 'monitor') return '<span class="tag tag-monitor">Monitoring</span>';
+  return '<span class="tag tag-cluster">' + name + '</span>';
+}
+
+function hidChipHtml(h){
+  let inner = '<b>' + h.hid + '</b>';
+  if (h.name) inner += '<span class="hname">' + h.name + '</span>';
+  if (h.customName) inner += '<span class="hcn">custom_name: ' + h.customName + '</span>';
+  return '<span class="hidchip">' + inner + '</span>';
+}
+
+function hidListHtml(hids, rowId){
+  const showN = 8;
+  const shown = hids.slice(0, showN);
+  const rest = hids.slice(showN);
+  let html = shown.map(hidChipHtml).join('');
+  if (rest.length) {
+    html += '<span class="more-link" data-count="' + rest.length + '" onclick="toggleMore(this,\'' + rowId + '\')">+' + rest.length + ' more</span>';
+    html += '<span id="' + rowId + '" style="display:none">' + rest.map(hidChipHtml).join('') + '</span>';
+  }
+  return html;
+}
+function toggleMore(el, id){
+  const span = document.getElementById(id);
+  const hidden = span.style.display === 'none';
+  span.style.display = hidden ? 'inline' : 'none';
+  el.textContent = hidden ? 'Show less' : ('+' + el.getAttribute('data-count') + ' more');
+}
+
+function visibleRows(){
+  return scheduleDays;
+}
+function visibleGroups(){
+  return DATA.groups;
+}
+
+function renderAll(){
+  if (!scheduleDays.length) return;
+  const rows = visibleRows();
+  const workRows = rows.filter(d => !d.isFreeze && !d.isPlaceholder);
+  const groups = visibleGroups();
+  const totalHids = groups.reduce((s,g) => s + g.hids.length, 0);
+
+  const first = rows[0].date;
+  const last = rows[rows.length - 1].date;
+  const spanWeeks = Math.round((last - first) / (7*86400000)) + 1;
+
+  document.getElementById('mTotal').textContent = totalHids;
+  document.getElementById('mDays').textContent = workRows.length;
+  document.getElementById('mDaysSub').textContent = 'batches (4 capped + ' + Math.max(0, workRows.length-4) + ' uncapped)';
+  document.getElementById('mStart').textContent = fmtShort(first);
+  document.getElementById('mEnd').textContent = fmtShort(last);
+  document.getElementById('mSpan').textContent = spanWeeks + 'w';
+
+  renderDayTable(rows);
+  renderDeferred();
+  renderSuspended();
+}
+
+function holidayBadgeHtml(start, end){
+  const checkEnd = end || addDays(start, 13); // open-ended last row: preview the next 2 weeks
+  const found = holidaysInRange(start, checkEnd).filter(h => h.country !== 'FREEZE');
+  if (!found.length) return '';
+  const classFor = c => c === 'CA' ? 'tag-ca' : 'tag-ua';
+  return found.map(h => '<span class="tag ' + classFor(h.country) + '" style="margin-left:4px">' + h.country + ': ' + h.name + '</span>').join('');
+}
+
+const DAY_COLUMNS = ['Wks','Seq','Cap','30 day notice by','Request by','Date','Batch / cluster','Total HIDs in cluster','HIDs with Webmail login','Webmail logins in last 30 days as of Thu 11 June','HID list (name / custom_name)','Excluded HIDs (cluster)'];
+let hiddenCols = new Set([0, 2, 3, 4, 7, 8, 9, 11]); // Wks, Cap, 30 day notice by, Request by, Total HIDs in cluster, HIDs with Webmail login, Webmail logins, Excluded HIDs (cluster)
+
+function applyColumnVisibility(){
+  const wrap = document.getElementById('dayTableWrap');
+  for (let i = 1; i <= DAY_COLUMNS.length; i++) wrap.classList.remove('hide-col-' + i);
+  hiddenCols.forEach(i => wrap.classList.add('hide-col-' + (i+1)));
+}
+
+function buildColumnsPanel(){
+  const panel = document.getElementById('columnsPanel');
+  panel.innerHTML = DAY_COLUMNS.map((label, i) => `
+    <label class="col-check-row">
+      <input type="checkbox" ${hiddenCols.has(i) ? '' : 'checked'} onchange="toggleColumn(${i})">
+      ${label}
+    </label>
+  `).join('');
+}
+
+function toggleColumn(i){
+  if (hiddenCols.has(i)) hiddenCols.delete(i); else hiddenCols.add(i);
+  applyColumnVisibility();
+}
+
+function toggleColumnsPanel(){
+  const panel = document.getElementById('columnsPanel');
+  const showing = panel.style.display !== 'none';
+  if (showing) { panel.style.display = 'none'; return; }
+  buildColumnsPanel();
+  panel.style.display = 'block';
+}
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('columnsPanel');
+  if (panel.style.display === 'none') return;
+  if (!panel.contains(e.target) && !e.target.closest('button[onclick="toggleColumnsPanel()"]')) {
+    panel.style.display = 'none';
+  }
+});
+
+const CLUSTER_TOTAL_HIDS = {
+  c0:37, c2:26, c7:27, c8:4, c25:59, c26:8, c28:11, c30:2, c35:1, c38:2, c40:68, c45:3, c50:24, c75:16
+};
+
+function excludedHidsHtml(clusterName){
+  const parts = clusterName.split(' + ');
+  const list = parts.flatMap(p => (DATA.clusterExcluded && DATA.clusterExcluded[p]) || []);
+  if (!list.length) return '—';
+  return list.map(x => '<span class="hidchip"><b>' + x.hid + '</b>' + (x.name ? '<span class="hname">' + x.name + '</span>' : '') + '<span class="hname" style="color:#a8a79d" title="' + x.reason + '">' + x.reason + '</span></span>').join('');
+}
+
+function renderDayTable(rows){
+  const tbl = document.getElementById('dayTable');
+  tbl.innerHTML = '';
+  const thead = tbl.createTHead();
+  const trH = thead.insertRow();
+  ['Wks','Seq','Cap','30 day notice by','Request by','Date','Batch / cluster','Total HIDs in cluster','HIDs with Webmail login','Webmail logins in last 30 days<br>as of Thu 11 June','HID list (name / custom_name)','Excluded HIDs (cluster)'].forEach(h => {
+    const th = document.createElement('th'); th.innerHTML = h;
+    if (h === 'Wks' || h === 'Seq' || h === 'Total HIDs in cluster' || h === 'HIDs with Webmail login' || h.indexOf('Webmail logins') === 0) th.style.textAlign = 'right';
+    trH.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  const firstDated = rows.find(r => r.date);
+  const scheduleStart = firstDated ? firstDated.date : null;
+  const weekNumFor = (refDate) => scheduleStart ? Math.round((refDate - scheduleStart) / (7*86400000)) + 1 : '—';
+
+  rows.forEach(d => {
+    const tr = tbody.insertRow();
+    if (d.isFreeze) {
+      tr.className = 'freeze-row';
+      const isSingleDay = isoDate(d.rangeStart) === isoDate(d.rangeEnd);
+      const freezeDateLabel = isSingleDay
+        ? fmtShort(d.rangeStart)
+        : fmtShort(d.rangeStart) + ' to ' + fmtShort(d.rangeEnd);
+      tr.innerHTML = `
+        <td class="num mono">${weekNumFor(d.rangeStart)}</td>
+        <td class="mono">—</td>
+        <td>—</td>
+        <td class="notice">—</td>
+        <td class="notice">—</td>
+        <td class="datecell">${freezeDateLabel}</td>
+        <td><span class="tag tag-freeze">Code freeze</span></td>
+        <td class="num mono">—</td>
+        <td class="num mono">0</td>
+        <td class="num mono">—</td>
+        <td>No rollout — Code freeze (Christmas/New Year), between ${d.afterGroup} and ${d.beforeGroup}</td>
+        <td>—</td>
+      `;
+      return;
+    }
+    if (d.isPlaceholder) {
+      tr.className = 'placeholder-row';
+      tr.innerHTML = `
+        <td class="num mono">${weekNumFor(d.date)}</td>
+        <td class="num mono">—</td>
+        <td>—</td>
+        <td class="notice">—</td>
+        <td class="notice">—</td>
+        <td class="datecell">${fmtShort(d.date)}</td>
+        <td><span class="tag tag-placeholder">Reserved — empty slot</span></td>
+        <td class="num mono">—</td>
+        <td class="num mono">0</td>
+        <td class="num mono">—</td>
+        <td>No rollout scheduled — held open</td>
+        <td>—</td>
+      `;
+      return;
+    }
+    const rowId = 'more_' + d.dayNum;
+    const knownLogins = d.hids.filter(h => h.logins != null);
+    const totalLogins = knownLogins.reduce((s,h) => s + h.logins, 0);
+    const hasUnknown = knownLogins.length < d.hids.length;
+    const clusterTotal = d.kind === 'cluster'
+      ? d.group.split(' + ').reduce((sum, p) => sum + (CLUSTER_TOTAL_HIDS[p] != null ? CLUSTER_TOTAL_HIDS[p] : 0), 0)
+      : d.hids.length;
+    const excludedCell = d.kind === 'cluster' ? excludedHidsHtml(d.group) : '—';
+    tr.innerHTML = `
+      <td class="num mono">${weekNumFor(d.date)}</td>
+      <td class="num mono">${d.seqNum}</td>
+      <td>${d.capped ? '<span class="tag tag-cap">≤5</span>' : '<span class="tag tag-nocap">uncapped</span>'}</td>
+      <td class="notice">${fmtShort(addDays(d.date, -30))}</td>
+      <td class="notice">${fmtShort(subtractBusinessDays(d.date, leadDaysFor(d.kind)))}<br>(${leadDaysFor(d.kind)} days lead time)</td>
+      <td class="datecell">${fmtShort(d.date)}</td>
+      <td>${tagFor(d.kind, d.group)}</td>
+      <td class="num mono">${clusterTotal}</td>
+      <td class="num mono">${knownLogins.length}${hasUnknown ? '<span title="'+(d.hids.length - knownLogins.length)+' HID(s) in this batch have no recorded webmail login in the last 30 days">*</span>' : ''}</td>
+      <td class="num mono">${totalLogins.toLocaleString()}</td>
+      <td class="hidlist">${hidListHtml(d.hids, rowId)}</td>
+      <td class="hidlist">${excludedCell}</td>
+    `;
+    const monWindow = d.monitorEnd
+      ? fmtShort(d.monitorStart) + ' – ' + fmtShort(d.monitorEnd)
+      : fmtShort(d.monitorStart) + ' onward';
+    const monHolidays = holidayBadgeHtml(d.monitorStart, d.monitorEnd);
+    const monTr = tbody.insertRow();
+    monTr.className = 'mon-sub-row';
+    monTr.innerHTML = `<td colspan="12">Monitoring: ${monWindow}${monHolidays}</td>`;
+  });
+}
+
+function renderDeferred(){
+  const tbl = document.getElementById('deferredTable');
+  tbl.innerHTML = '';
+  const thead = tbl.createTHead();
+  const trH = thead.insertRow();
+  ['HID','Name','custom_name','Home cluster','Webmail logins in last 30 days<br>as of Thu 11 June'].forEach(h => {
+    const th = document.createElement('th'); th.innerHTML = h;
+    if (h.indexOf('Webmail logins') === 0) th.style.textAlign = 'right';
+    trH.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  DATA.deferred2027.forEach(h => {
+    const tr = tbody.insertRow();
+    tr.innerHTML = `
+      <td class="mono">${h.hid}</td>
+      <td><span class="tag tag-deferred">${h.name || '—'}</span></td>
+      <td>${h.customName || '—'}</td>
+      <td class="mono">${h.cluster}</td>
+      <td class="num mono">${h.logins != null ? h.logins.toLocaleString() : '—'}</td>
+    `;
+  });
+}
+
+function renderSuspended(){
+  const tbl = document.getElementById('suspendedTable');
+  tbl.innerHTML = '';
+  const thead = tbl.createTHead();
+  const trH = thead.insertRow();
+  ['HID','custom_name','Reason'].forEach(h => {
+    const th = document.createElement('th'); th.textContent = h; trH.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  DATA.suspended.forEach(h => {
+    const tr = tbody.insertRow();
+    tr.innerHTML = `
+      <td class="mono">${h.hid}</td>
+      <td><span class="tag tag-suspended">${h.customName || '—'}</span></td>
+      <td>${h.reason}</td>
+    `;
+  });
+}
+
+function exportCSV(){
+  const esc = v => '"' + String(v).replace(/"/g,'""') + '"';
+  const rows = [
+    ['Webmail 8 + Portal Upgrade Rollout Schedule'],
+    ['Generated: ' + new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})],
+    ['Start date: 2026-09-29'],
+    [],
+    ['Day','Cap','Date','Request by','Batch/Cluster','Part','HID','Name','custom_name','30d logins','Home cluster','Monitoring window start','Monitoring window end']
+  ];
+  visibleRows().forEach(d => {
+    if (d.isFreeze) {
+      rows.push(['—', '—', isoDate(d.rangeStart), '—', 'Code freeze (Christmas/New Year)', '', '', '', '', '', '', isoDate(d.rangeStart), isoDate(d.rangeEnd)]);
+      return;
+    }
+    if (d.isPlaceholder) {
+      rows.push([d.dayNum, '—', isoDate(d.date), '—', 'RESERVED (empty slot, no rollout)', '', '', '', '', '', '', '', '']);
+      return;
+    }
+    d.hids.forEach(h => {
+      rows.push([d.dayNum, d.capped ? 'capped' : 'uncapped', isoDate(d.date), isoDate(subtractBusinessDays(d.date, leadDaysFor(d.kind))), d.group, d.partOf || '', h.hid, h.name || '', h.customName || '', h.logins != null ? h.logins : '', h.cluster, isoDate(d.monitorStart), d.monitorEnd ? isoDate(d.monitorEnd) : 'onward']);
+    });
+  });
+  rows.push([]);
+  rows.push(['Deferred to 2027 (own future batch)']);
+  rows.push(['HID','Name','custom_name','Home cluster','30d logins']);
+  DATA.deferred2027.forEach(h => rows.push([h.hid, h.name || '', h.customName || '', h.cluster, h.logins != null ? h.logins : '']));
+  rows.push([]);
+  rows.push(['Excluded — suspended (digitalspaceforfive)']);
+  rows.push(['HID','custom_name','Reason']);
+  DATA.suspended.forEach(h => rows.push([h.hid, h.customName || '', h.reason]));
+
+  const csv = rows.map(r => r.map(esc).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'wm8_portal_rollout_schedule.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+buildSchedule();
+applyColumnVisibility();
+</script>
+</body>
+</html>
